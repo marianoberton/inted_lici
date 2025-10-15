@@ -1,0 +1,55 @@
+# Archivos de entorno
+.env
+*.env
+
+# Logs
+*.log
+data/logs/*
+!data/logs/.gitkeep
+
+# Timestamps
+data/timestamps/*
+!data/timestamps/.gitkeep
+
+# Archivos temporales de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Archivos de Excel descargados
+pipeline_licitaciones/excels/caba/*.csv
+pipeline_licitaciones/excels/pba/*.csv
+pipeline_licitaciones/excels/nacion/*.csv
+
+# Archivos de timestamp locales
+pipeline_licitaciones/last_extraction_timestamp*.txt
+
+# Docker
+.dockerignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

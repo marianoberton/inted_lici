@@ -1,0 +1,18 @@
+services:
+  pipeline-licitaciones:
+    build: .
+    container_name: pipeline-licitaciones
+    restart: unless-stopped
+    environment:
+      - FIREBASE_CREDENTIALS_PATH=/app/pipeline_licitaciones/procesos-inted-firebase-adminsdk-qwt8a-8324a99c15.json
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+    volumes:
+      - ./data:/app/data
+    networks:
+      - pipeline-network
+
+networks:
+  pipeline-network:
+    driver: bridge

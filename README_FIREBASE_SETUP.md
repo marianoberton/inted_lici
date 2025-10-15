@@ -1,88 +1,60 @@
-# Configuración de Firebase para el Pipeline de Licitaciones
+# Configuración de Firebase
 
-## Problema Identificado
+## Problema
 
-El error que estás viendo indica que el contenedor Docker no puede autenticarse con Firebase porque está intentando usar **Application Default Credentials (ADC)** de Google Cloud, pero el contenedor no está ejecutándose en un entorno de Google Cloud.
+Error de autenticación con Firebase en contenedores Docker que no pueden usar Application Default Credentials (ADC).
 
-```
-ERROR:firebase_config:Error al inicializar Firebase: Your default credentials were not found. To set up Application Default Credentials, see https://cloud.google.com/docs/authentication/external/set-up-adc for more information.
-```
+## Solución
 
-## Solución Implementada
+### Variables de Entorno
 
-### 1. Configuración de Variables de Entorno
+El sistema soporta autenticación mediante Service Account Key:
 
-El sistema ahora soporta autenticación mediante **Service Account Key** usando variables de entorno. Hay dos opciones:
-
-#### Opción 1: JSON completo como string (RECOMENDADO para Docker)
+#### Opción 1: JSON como string (Recomendado)
 ```bash
-FIREBASE_CREDENTIALS_JSON={"type":"service_account","project_id":"procesos-inted",...}
+FIREBASE_CREDENTIALS_JSON={"type":"service_account","project_id":"your-project",...}
 ```
 
-#### Opción 2: Ruta al archivo de credenciales
+#### Opción 2: Ruta al archivo
 ```bash
-FIREBASE_CREDENTIALS_PATH=/app/pipeline_licitaciones/procesos-inted-firebase-adminsdk-qwt8a-8324a99c15.json
+FIREBASE_CREDENTIALS_PATH=/path/to/credentials.json
 ```
 
-### 2. Pasos para Configurar
+### Configuración
 
-1. **Obtener las credenciales de Firebase:**
-   - Ve a [Firebase Console](https://console.firebase.google.com/)
-   - Selecciona tu proyecto `procesos-inted`
-   - Ve a **Configuración del proyecto** > **Cuentas de servicio**
-   - Haz clic en **Generar nueva clave privada**
-   - Descarga el archivo JSON
+1. **Obtener credenciales:**
+   - Acceder a Firebase Console
+   - Ir a Configuración del proyecto > Cuentas de servicio
+   - Generar nueva clave privada
+   - Descargar archivo JSON
 
-2. **Configurar las variables de entorno:**
-   - Copia `.env.example` a `.env`
-   - Reemplaza el valor de `FIREBASE_CREDENTIALS_JSON` con el contenido completo del archivo JSON descargado
-   - **IMPORTANTE:** El JSON debe estar en una sola línea, sin saltos de línea
+2. **Configurar variables:**
+   - Copiar `.env.example` a `.env`
+   - Reemplazar `FIREBASE_CREDENTIALS_JSON` con el contenido del archivo
+   - El JSON debe estar en una sola línea
 
-3. **Ejemplo de configuración correcta:**
-```bash
-FIREBASE_CREDENTIALS_JSON={"type":"service_account","project_id":"procesos-inted","private_key_id":"abc123","private_key":"-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC...\n-----END PRIVATE KEY-----\n","client_email":"firebase-adminsdk-qwt8a@procesos-inted.iam.gserviceaccount.com","client_id":"123456789","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs/firebase-adminsdk-qwt8a%40procesos-inted.iam.gserviceaccount.com"}
-```
+### Orden de Autenticación
 
-### 3. Orden de Prioridad de Autenticación
+1. `FIREBASE_CREDENTIALS_JSON` (variable de entorno)
+2. `FIREBASE_CREDENTIALS_PATH` (archivo)
+3. Ubicaciones conocidas de archivos
+4. Google Cloud default credentials
 
-El sistema intentará autenticarse en este orden:
-
-1. **FIREBASE_CREDENTIALS_JSON** (variable de entorno con JSON)
-2. **FIREBASE_CREDENTIALS_PATH** (ruta al archivo de credenciales)
-3. **Archivos en ubicaciones conocidas** (fallback)
-4. **Credenciales por defecto de Google Cloud** (solo funciona en GCP)
-
-### 4. Verificar la Configuración
-
-Después de configurar las variables de entorno, puedes probar la conexión:
+### Verificación
 
 ```bash
-# Reconstruir la imagen
-docker-compose build
-
-# Probar la conexión a Firebase
-docker-compose run --rm pipeline-licitaciones python -c "
-from pipeline_licitaciones.firebase_config import get_firestore_client
-print('Testing Firebase connection...')
-client = get_firestore_client()
-print('Firebase connection successful!')
-"
+# Probar conexión
+docker-compose exec pipeline python -c "from pipeline_licitaciones.firebase_config import get_firestore_client; client = get_firestore_client(); print('Conexión exitosa')"
 ```
 
-### 5. Troubleshooting
+### Troubleshooting
 
-- **Error de JSON malformado:** Asegúrate de que el JSON esté en una sola línea y que las comillas estén escapadas correctamente
-- **Error de permisos:** Verifica que la cuenta de servicio tenga los permisos necesarios en Firebase
-- **Error de proyecto:** Confirma que el `project_id` en las credenciales coincida con tu proyecto de Firebase
+- **Error de credenciales**: Verificar formato JSON
+- **Error de permisos**: Verificar roles en Firebase Console
+- **Error de conexión**: Verificar conectividad de red
 
-## Archivos Modificados
+## Seguridad
 
-- `deploy/.env.example` - Agregada configuración de Firebase
-- `deploy/docker-compose.yml` - Configurado para usar archivo .env
-- `deploy/pipeline_licitaciones/firebase_config.py` - Ya tenía soporte para múltiples métodos de autenticación
-
-## Próximos Pasos
-
-1. Configura tu archivo `.env` con las credenciales reales
-2. Reconstruye y ejecuta el contenedor
-3. Verifica que el pipeline funcione correctamente
+- Usar variables de entorno para credenciales
+- No incluir credenciales en código
+- Verificar que `.env` esté en `.gitignore`

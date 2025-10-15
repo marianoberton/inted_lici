@@ -175,10 +175,27 @@ with sync_playwright() as p:
                 print("Fallaron todos los intentos para Nación.")
                 all_success = False
 
-if not all_success:
-    print("\nAl menos una de las descargas no se pudo completar después de varios intentos.")
+# Evaluar el resultado final - CABA es crítico, PBA y Nación son opcionales
+if not success_caba:
+    print("\nERROR CRÍTICO: La descarga de CABA falló. El pipeline no puede continuar sin los datos de CABA.")
     sys.exit(1)
 else:
-    print("\nTodas las descargas configuradas (CABA, PBA, Nación) se completaron exitosamente.")
+    print("\nDescarga de CABA exitosa - el pipeline puede continuar.")
+    
+    # Reportar el estado de las descargas opcionales
+    if success_pba:
+        print("✓ Descarga de PBA exitosa")
+    else:
+        print("⚠ Descarga de PBA falló - continuando sin estos datos")
+    
+    if success_nacion:
+        print("✓ Descarga de Nación exitosa")
+    else:
+        print("⚠ Descarga de Nación falló - continuando sin estos datos")
+    
+    if all_success:
+        print("\n🎉 Todas las descargas se completaron exitosamente.")
+    else:
+        print("\n✅ Pipeline continuará con los datos disponibles (CABA es suficiente para el funcionamiento básico).")
 
-# Si el script llega aquí, significa que todas las descargas fueron exitosas
+# Si el script llega aquí, significa que al menos CABA fue exitoso y el pipeline puede continuar

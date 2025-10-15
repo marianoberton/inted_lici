@@ -12,21 +12,9 @@ from dotenv import load_dotenv
 # Cargar variables de entorno desde .env
 load_dotenv()
 
-# Inicializar Firestore
-script_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
-cred_path = os.path.join(script_dir, 'procesos-inted-firebase-adminsdk-qwt8a-8324a99c15.json')
-if not os.path.exists(cred_path):
-    # Intentar ruta alternativa
-    cred_path = os.path.join('pipeline_licitaciones', 'procesos-inted-firebase-adminsdk-qwt8a-8324a99c15.json')
-cred = credentials.Certificate(cred_path)
-
-# Verificar si Firebase ya está inicializado
-if not firebase_admin._apps:
-    firebase_admin.initialize_app(cred)
-else:
-    print("Firebase ya está inicializado, usando la instancia existente")
-
-db = firestore.client()
+# Inicializar Firebase de manera segura
+from firebase_config import get_firestore_client
+db = get_firestore_client()
 
 # ---------------------------
 # Configuración del Bot Original (CABA - Excluye código repartición 400-499)

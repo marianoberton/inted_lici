@@ -18,20 +18,16 @@ ERROR_PLACEHOLDER = "Error al extraer texto"
 # CRITICAL_INFO_BASICA_FIELDS = [] 
 # CRITICAL_CRONOGRAMA_FIELDS = [] 
 
-# Initialize Firebase Admin SDK
+# Inicializar Firebase de manera segura
+from firebase_config import get_firestore_client
+
 try:
-    # Asumimos que el JSON de credenciales está en la raíz del proyecto
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    cred_path = os.path.join(script_dir, 'procesos-inted-firebase-adminsdk-qwt8a-8324a99c15.json')
-    cred = credentials.Certificate(cred_path)
-    firebase_admin.initialize_app(cred)
-    db = firestore.client()
-    print("SDK de Firebase inicializado correctamente.")
-except Exception as e_firebase_init:
-    print(f"Error al inicializar Firebase Admin SDK: {e_firebase_init}")
-    print("Asegúrate de que el archivo 'procesos-inted-firebase-adminsdk-qwt8a-8324a99c15.json' esté en la raíz del proyecto y sea válido.")
-    db = None # Para que el script no falle si Firestore no se puede usar
-    # sys.exit(1) # Podrías descomentar esto si Firestore es absolutamente esencial para continuar
+    db = get_firestore_client()
+    print("Firebase inicializado correctamente")
+except Exception as e:
+    print(f"Error al inicializar Firebase: {e}")
+    print("Verifica la configuración de las credenciales de Firebase.")
+    sys.exit(1)
 
 # Define the directory where CSV files are located
 csv_directory = 'pipeline_licitaciones/excels/nacion/' # Ajustado para Windows

@@ -2,12 +2,9 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import re
 
-# Inicializar Firebase
-script_dir = os.path.dirname(os.path.abspath(__file__))
-cred_path = os.path.join(script_dir, 'procesos-inted-firebase-adminsdk-qwt8a-8324a99c15.json')
-cred = credentials.Certificate(cred_path)
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+# Inicializar Firebase de manera segura
+from firebase_config import get_firestore_client
+db = get_firestore_client()
 
 def actualizar_codigo_reparticion():
     docs = db.collection('procesos-bac').stream()

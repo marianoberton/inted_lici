@@ -1,43 +1,34 @@
-# Dockerfile optimizado para EasyPanel
-FROM python:3.11-slim
-
-# Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    dos2unix \
-    cron \
-    chromium \
-    && rm -rf /var/lib/apt/lists/*
+# Usar imagen base con Playwright preinstalado (versión actualizada)
+FROM mcr.microsoft.com/playwright/python:v1.48.0-jammy
 
 # Configurar directorio de trabajo
 WORKDIR /app
 
-# Instalar dependencias de Python
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    cron \
+    dos2unix \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar requirements y instalar dependencias Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Instalar Playwright y configurar Chromium
-RUN playwright install chromium
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 # Copiar código fuente
 COPY pipeline_licitaciones/ ./pipeline_licitaciones/
 COPY entrypoint.sh .
 COPY *.py .
 
-# Hacer ejecutable el entrypoint
+# Hacer ejecutable el script de entrada
 RUN chmod +x entrypoint.sh
 
-# Crear directorios necesarios
+# Configurar variables de entorno
+ENV PYTHONPATH=/app
+ENV TZ=America/Argentina/Buenos_Aires
+ENV GOOGLE_GEMINI_API_KEY=""
+
+# Crear directorios para datos persistentes
 RUN mkdir -p /app/data/logs /app/data/timestamps
 
-# Configurar variables de entorno para Playwright
-ENV PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-
-# Exponer puerto si es necesario
-EXPOSE 8000
-
 # Punto de entrada
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]

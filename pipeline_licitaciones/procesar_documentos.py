@@ -10,24 +10,21 @@ from dotenv import load_dotenv
 # Cargar variables de entorno
 load_dotenv()
 
-# Inicializar Firebase Admin SDK
-script_dir = os.path.dirname(os.path.abspath(__file__))
-cred_path = os.path.join(script_dir, 'procesos-inted-firebase-adminsdk-qwt8a-8324a99c15.json')
-cred = credentials.Certificate(cred_path)
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+# Inicializar Firebase de manera segura
+from firebase_config import get_firestore_client
+db = get_firestore_client()
 
 # Configurar la API de Gemini
 API_KEY = os.getenv('GOOGLE_GEMINI_API_KEY')  
 if not API_KEY:
-    raise ValueError("La clave de API no está configurada. Por favor, configúrala correctamente.")
+    raise ValueError("La clave de API de Gemini no está configurada. Por favor, configura GOOGLE_GEMINI_API_KEY en las variables de entorno.")
 
 # Crear cliente de Gemini
 client = genai.Client(api_key=API_KEY)
 
-# Modelos de Gemini actualizados
-MODELO_PRINCIPAL = "models/gemini-1.5-flash"
-MODELO_RESPALDO = "models/gemini-1.5-pro"
+# Modelos de Gemini actualizados (2025)
+MODELO_PRINCIPAL = "gemini-2.5-flash"
+MODELO_RESPALDO = "gemini-2.0-flash"
 modelo_actual = MODELO_PRINCIPAL
 
 # Opciones de categorías generales

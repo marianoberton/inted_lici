@@ -13,16 +13,9 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 cred_path = os.path.join(script_dir, 'procesos-inted-firebase-adminsdk-qwt8a-8324a99c15.json')
 LAST_TIMESTAMP_FILE = os.path.join(script_dir, 'last_extraction_timestamp_nacion.txt')
 
-# Inicializar Firestore
-cred = credentials.Certificate(cred_path)
-# Use a unique app name if running multiple initializations from the same process, otherwise default is fine.
-try:
-    firebase_admin.get_app(name='nacion_sender')
-except ValueError:
-    firebase_admin.initialize_app(cred, name='nacion_sender')
-
-app_instance = firebase_admin.get_app(name='nacion_sender')
-db = firestore.client(app=app_instance)
+# Inicializar Firebase de manera segura
+from firebase_config import get_firestore_client
+db = get_firestore_client()
 
 # Configurar el token y el chat ID de Telegram
 # TODO: Reemplazar con el TOKEN del NUEVO BOT para NACION si es diferente.

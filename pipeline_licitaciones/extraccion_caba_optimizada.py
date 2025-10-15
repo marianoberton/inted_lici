@@ -12,12 +12,9 @@ import sys
 
 procesos_fallidos = []
 
-# Inicializar Firebase
-script_dir = os.path.dirname(os.path.abspath(__file__))
-cred_path = os.path.join(script_dir, 'procesos-inted-firebase-adminsdk-qwt8a-8324a99c15.json')
-cred = credentials.Certificate(cred_path)
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+# Inicializar Firebase de manera segura
+from firebase_config import get_firestore_client
+db = get_firestore_client()
 
 # Define the directory where CSV files are located (ajustado para Windows)
 csv_directory = 'pipeline_licitaciones/excels/caba/'

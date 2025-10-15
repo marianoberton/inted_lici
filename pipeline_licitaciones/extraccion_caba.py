@@ -15,12 +15,9 @@ import sys
 procesos_fallidos = []
 
 print("--- extraccion_caba.py: Antes de inicializar Firebase ---")
-# Inicializar Firebase
-script_dir = os.path.dirname(os.path.abspath(__file__))
-cred_path = os.path.join(script_dir, 'procesos-inted-firebase-adminsdk-qwt8a-8324a99c15.json')
-cred = credentials.Certificate(cred_path)
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+# Inicializar Firebase de manera segura
+from firebase_config import get_firestore_client
+db = get_firestore_client()
 print("--- extraccion_caba.py: Después de inicializar Firebase ---")
 
 # Define the directory where CSV files are located (ajustado para Windows)

@@ -1,55 +1,145 @@
-# Pipeline de Licitaciones - Despliegue EasyPanel
+# Pipeline de Licitaciones - Deploy para EasyPanel
 
-Este directorio contiene los archivos mínimos necesarios para desplegar el pipeline de licitaciones en EasyPanel.
+Este directorio contiene la versión optimizada del Pipeline de Licitaciones preparada específicamente para despliegue en **EasyPanel**.
 
-## Archivos Incluidos
+## 🔧 Configuración Segura de Credenciales
 
-### Archivos de Configuración
-- `Dockerfile` - Imagen Docker optimizada
-- `docker-compose.yml` - Configuración de servicios
-- `entrypoint.sh` - Script de inicio del contenedor
-- `.env.example` - Variables de entorno de ejemplo
+### Métodos de Configuración de Firebase
 
-### Código Fuente
-- `pipeline_licitaciones/` - Módulo principal del pipeline
-- `requirements.txt` - Dependencias Python
-- `update_db.py` - Script de actualización de base de datos
-- `timestamp_manager.py` - Gestor de timestamps
+El pipeline soporta **múltiples métodos** para configurar las credenciales de Firebase de manera segura:
 
-## Configuración para EasyPanel
+#### Opción 1: Variables de Entorno (Recomendado para Producción)
 
-### 1. Variables de Entorno
-Configura estas variables en EasyPanel:
-
-```
-TELEGRAM_BOT_TOKEN=tu_token_de_bot_telegram
-TELEGRAM_CHAT_ID=tu_chat_id_telegram
-PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+```bash
+# Configurar credenciales como JSON string
+export FIREBASE_CREDENTIALS_JSON='{"type":"service_account","project_id":"your-project-id",...}'
 ```
 
-### 2. Volúmenes
-Crea un volumen para persistir datos:
-- `/app/data` - Para logs y timestamps
+#### Opción 2: Archivo de Credenciales (Desarrollo Local)
 
-### 3. Despliegue
-1. Sube este directorio a tu repositorio Git
-2. Conecta el repositorio en EasyPanel
-3. Configura las variables de entorno
-4. Despliega el servicio
+```bash
+# Configurar ruta al archivo de credenciales
+export FIREBASE_CREDENTIALS_PATH="/path/to/your/firebase-credentials.json"
+```
 
-## Funcionalidad
+#### Opción 3: Credenciales por Defecto de Google Cloud
 
-El pipeline:
-- Se ejecuta automáticamente al iniciar el contenedor
-- Descarga datos de CABA, PBA y Nación
-- Procesa y actualiza la base de datos Firebase
-- Se programa para ejecutar diariamente a las 9:00 AM via cron
-- Envía notificaciones por Telegram
+Para entornos de Google Cloud, el pipeline puede usar las credenciales por defecto automáticamente.
 
-## Logs
+### Configuración en EasyPanel
 
-Los logs se guardan en `/app/data/logs/cron-pipeline.log` dentro del contenedor.
+1. **Crear las variables de entorno** en EasyPanel:
+   - `FIREBASE_CREDENTIALS_JSON`: El contenido completo del archivo JSON de credenciales
+   - `TELEGRAM_BOT_TOKEN`: Token del bot de Telegram
+   - `TELEGRAM_CHAT_ID`: ID del chat de Telegram
+   - `GEMINI_API_KEY`: Clave de API de Gemini
 
-## Soporte
+2. **Ejemplo de configuración**:
+   ```
+   FIREBASE_CREDENTIALS_JSON={"type":"service_account","project_id":"procesos-inted",...}
+   TELEGRAM_BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz
+   TELEGRAM_CHAT_ID=-1001234567890
+   GEMINI_API_KEY=AIzaSyC...
+   ```
 
-Para problemas o dudas, revisa los logs del contenedor en EasyPanel.
+## 🚀 Características
+
+- ✅ **Pipeline completo** para CABA, PBA y Nación
+- ✅ **Configuración segura** de credenciales Firebase
+- ✅ **Docker optimizado** con Playwright preinstalado
+- ✅ **Cron automático** configurado para ejecución diaria
+- ✅ **Notificaciones Telegram** de novedades
+- ✅ **Integración Firebase** Firestore
+- ✅ **Procesamiento IA** con Gemini
+- ✅ **Logs persistentes** y timestamps
+- ✅ **Manejo de errores** robusto
+
+## 📁 Estructura
+
+```
+deploy/
+├── pipeline_licitaciones/     # Código principal del pipeline
+│   ├── firebase_config.py     # Configuración segura de Firebase
+│   ├── extraccion_*.py        # Scripts de extracción
+│   ├── enviar_novedades*.py   # Scripts de notificaciones
+│   └── ...
+├── Dockerfile                 # Imagen Docker optimizada
+├── docker-compose.yml         # Configuración de contenedor
+├── entrypoint.sh             # Script de inicio
+├── requirements.txt          # Dependencias Python
+├── .env.example             # Plantilla de variables de entorno
+└── README.md                # Esta documentación
+```
+
+## 🔒 Seguridad
+
+- **❌ Sin credenciales hardcodeadas**: Todas las credenciales se manejan via variables de entorno
+- **✅ Múltiples métodos de autenticación**: Flexibilidad para diferentes entornos
+- **✅ Fallbacks seguros**: El sistema intenta múltiples métodos de autenticación
+- **✅ Logs sin secretos**: Los logs no exponen información sensible
+
+## 🐳 Despliegue
+
+### En EasyPanel
+
+1. **Crear nuevo servicio** desde repositorio Git
+2. **Configurar variables de entorno** (ver sección anterior)
+3. **Configurar volúmenes persistentes**:
+   - `/app/data/logs` → Para logs
+   - `/app/data/timestamps` → Para timestamps
+4. **Configurar cron** (opcional): `0 9 * * *` para ejecución diaria a las 9 AM
+
+### Localmente con Docker
+
+```bash
+# Clonar y configurar
+git clone <repository-url>
+cd deploy
+
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+
+# Construir y ejecutar
+docker-compose up --build
+```
+
+## 📊 Monitoreo
+
+- **Logs**: Disponibles en `/app/data/logs/`
+- **Timestamps**: Guardados en `/app/data/timestamps/`
+- **Notificaciones**: Enviadas automáticamente via Telegram
+- **Estado**: Verificable via logs del contenedor
+
+## 🔧 Troubleshooting
+
+### Error de Credenciales Firebase
+
+```
+Error al inicializar Firebase: [Errno 2] No such file or directory
+```
+
+**Solución**: Verificar que `FIREBASE_CREDENTIALS_JSON` esté configurado correctamente.
+
+### Error de Playwright
+
+```
+Playwright Chromium executable not found
+```
+
+**Solución**: El Dockerfile ya incluye la instalación de Chromium. Reconstruir la imagen.
+
+### Error de Permisos
+
+```
+Permission denied: '/app/data/logs'
+```
+
+**Solución**: Verificar que los volúmenes estén configurados correctamente en EasyPanel.
+
+## 📞 Soporte
+
+Para problemas o consultas:
+1. Revisar los logs del contenedor
+2. Verificar la configuración de variables de entorno
+3. Consultar la documentación de EasyPanel

@@ -1,14 +1,17 @@
-# Archivos de entorno
+# Archivos de configuración sensibles
 .env
-*.env
+.env.local
+.env.production
 
-# Logs
+# Credenciales de Firebase
+*firebase-adminsdk*.json
+procesos-inted-firebase-adminsdk-*.json
+
+# Logs y archivos temporales
 *.log
 data/logs/*
-!data/logs/.gitkeep
-
-# Timestamps
 data/timestamps/*
+!data/logs/.gitkeep
 !data/timestamps/.gitkeep
 
 # Archivos temporales de Python
@@ -33,18 +36,18 @@ wheels/
 .installed.cfg
 *.egg
 
-# Archivos de Excel descargados
-pipeline_licitaciones/excels/caba/*.csv
-pipeline_licitaciones/excels/pba/*.csv
-pipeline_licitaciones/excels/nacion/*.csv
+# Archivos descargados
+pipeline_licitaciones/excels/caba/*.xlsx
+pipeline_licitaciones/excels/pba/*.xlsx
+pipeline_licitaciones/excels/nacion/*.xlsx
 
 # Archivos de timestamp locales
-pipeline_licitaciones/last_extraction_timestamp*.txt
+last_extraction_timestamp*.txt
 
 # Docker
 .dockerignore
 
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp

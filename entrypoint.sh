@@ -47,16 +47,26 @@ TZ=America/Argentina/Buenos_Aires
 EOF
 
 # Instalar crontab
+echo "Instalando crontab..."
 crontab /tmp/crontab
 
-# Verificar instalación
-echo "Crontab instalado:"
+# Verificar que crontab se instaló correctamente
+echo "Verificando crontab instalado:"
 crontab -l
 
 # Crear archivos de log iniciales
+echo "Creando archivos de log iniciales..."
 touch /app/data/logs/cron-pipeline.log
-touch /app/data/logs/cron-heartbeat.log  
+touch /app/data/logs/cron-heartbeat.log
 touch /app/data/logs/cron-debug.log
+touch /app/data/logs/cron-diagnostics.log
+
+# Hacer ejecutable el script de diagnóstico
+chmod +x /app/debug_cron.sh
+
+# Ejecutar diagnóstico inicial
+echo "Ejecutando diagnóstico inicial de cron..."
+/app/debug_cron.sh
 chmod 666 /app/data/logs/cron-*.log
 
 # Ejecutar pipeline al iniciar
@@ -68,17 +78,34 @@ python3 pipeline_licitaciones/run_pipeline.py
 echo "Pipeline iniciado. Cron configurado para ejecutar CADA 15 MINUTOS (testing) - Argentina."
 echo "Iniciando cron daemon..."
 
-# Iniciar cron daemon
-cron
+# Iniciar cron en foreground con logging mejorado
+echo "Iniciando cron daemon..."
+service cron start
 
-# Loop para mantener el contenedor activo y monitorear cron
+# Verificar que cron se inició correctamente
+sleep 2
+if pgrep cron > /dev/null; then
+    echo "✓ Cron daemon iniciado correctamente"
+else
+    echo "✗ ERROR: Cron daemon no se pudo iniciar"
+    exit 1
+fi
+
+# Ejecutar diagnóstico cada 5 minutos en background
+(
+    while true; do
+        sleep 300  # 5 minutos
+        /app/debug_cron.sh
+    done
+) &
+
+# Mantener el contenedor activo y monitorear cron
+echo "Contenedor iniciado. Monitoreando cron..."
 while true; do
-    # Verificar si cron está ejecutándose (usando pidof que es más confiable)
-    if ! pidof cron > /dev/null; then
-        echo "$(TZ=America/Argentina/Buenos_Aires date): Cron daemon no está ejecutándose, reiniciando..."
-        cron
+    if ! pgrep cron > /dev/null; then
+        echo "$(date): ALERTA - Cron daemon se detuvo, reiniciando..." >> /app/data/logs/cron-diagnostics.log
+        service cron start
+        sleep 5
     fi
-    
-    # Esperar 60 segundos antes de verificar nuevamente
-    sleep 60
+    sleep 30
 done

@@ -1,0 +1,17 @@
+services:
+  pipeline-licitaciones:
+    build: .
+    container_name: pipeline-licitaciones
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+    volumes:
+      - ./data:/app/data
+    networks:
+      - pipeline-network
+
+networks:
+  pipeline-network:
+    driver: bridge

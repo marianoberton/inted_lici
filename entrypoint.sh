@@ -17,16 +17,33 @@ mkdir -p /app/data/logs
 
 # Configurar cron con timezone explícito - CADA 15 MINUTOS PARA TESTING
 echo "Configurando cron..."
+
+# Crear archivo de variables de entorno para cron
+echo "Exportando variables de entorno para cron..."
+cat > /app/cron-env.sh << 'EOF'
+#!/bin/bash
+# Variables de entorno para cron
+export TZ=America/Argentina/Buenos_Aires
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+EOF
+
+# Agregar todas las variables de entorno del contenedor al archivo
+env | grep -E '^(TELEGRAM_|FIREBASE_|GOOGLE_|GEMINI_)' >> /app/cron-env.sh
+
+# Hacer ejecutable el archivo de entorno
+chmod +x /app/cron-env.sh
+
+# Crear crontab con source del archivo de entorno
 cat > /tmp/crontab << 'EOF'
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 TZ=America/Argentina/Buenos_Aires
-# Pipeline cada 15 minutos
-*/15 * * * * cd /app && /usr/bin/python3 pipeline_licitaciones/run_pipeline.py >> /app/data/logs/cron-pipeline.log 2>&1
+# Pipeline cada 15 minutos con variables de entorno
+*/15 * * * * /bin/bash -c "source /app/cron-env.sh && cd /app && /usr/bin/python3 pipeline_licitaciones/run_pipeline.py" >> /app/data/logs/cron-pipeline.log 2>&1
 # Heartbeat cada 5 minutos para verificar que cron funciona
 */5 * * * * /bin/echo "$(TZ=America/Argentina/Buenos_Aires /bin/date): Cron heartbeat - PID $$" >> /app/data/logs/cron-heartbeat.log 2>&1
-# Test cada minuto para debugging
-* * * * * /bin/echo "$(TZ=America/Argentina/Buenos_Aires /bin/date): Cron test minutely" >> /app/data/logs/cron-debug.log 2>&1
+# Test cada minuto para debugging con variables
+* * * * * /bin/bash -c "source /app/cron-env.sh && /bin/echo \"$(TZ=America/Argentina/Buenos_Aires /bin/date): Cron test - Vars: TELEGRAM_TOKEN_CABA=\${TELEGRAM_TOKEN_CABA:0:10}...\"" >> /app/data/logs/cron-debug.log 2>&1
 EOF
 
 # Instalar crontab

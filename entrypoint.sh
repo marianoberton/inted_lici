@@ -39,12 +39,15 @@ python3 pipeline_licitaciones/run_pipeline.py
 echo "Pipeline iniciado. Cron configurado para ejecutar CADA 15 MINUTOS (testing) - Argentina."
 echo "Iniciando cron daemon..."
 
-# Loop para mantener cron activo
+# Iniciar cron daemon
+cron
+
+# Loop para mantener el contenedor activo y monitorear cron
 while true; do
-    # Verificar si cron está ejecutándose
-    if ! pgrep -x "cron" > /dev/null; then
+    # Verificar si cron está ejecutándose (usando pidof que es más confiable)
+    if ! pidof cron > /dev/null; then
         echo "$(TZ=America/Argentina/Buenos_Aires date): Cron daemon no está ejecutándose, reiniciando..."
-        cron &
+        cron
     fi
     
     # Esperar 60 segundos antes de verificar nuevamente

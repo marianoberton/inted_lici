@@ -165,14 +165,6 @@ echo "Iniciando cron daemon..."
 # Ejecutar el pipeline una vez al iniciar, protegido por flock
 bash -lc '/app/run_pipeline_cron.sh' || true
 
-# Ejecutar diagnóstico cada 5 minutos en background
-(
-    while true; do
-        sleep 300  # 5 minutos
-        /app/debug_cron.sh
-    done
-) &
-
 # Iniciar cron en foreground (proceso principal del contenedor)
 echo "Iniciando cron en foreground como proceso principal..."
 exec cron -f

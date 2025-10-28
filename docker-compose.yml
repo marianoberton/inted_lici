@@ -1,7 +1,6 @@
 services:
   pipeline-licitaciones:
     build: .
-    container_name: pipeline-licitaciones
     restart: unless-stopped
     env_file:
       - .env

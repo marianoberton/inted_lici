@@ -25,13 +25,13 @@ TELEGRAM_CHAT_IDS = [-4815571002]  # Chat ID correcto con signo negativo para gr
 # ---------------------------
 # Configuración del Bot Salud Nuevo (Procesos Salud - Código repartición 400-499)
 # ---------------------------
-SALUD_NUEVO_TELEGRAM_TOKEN = '7841576758:AAFx8WgMUopKFKeJJ_HlepqGN-BRxP4kwtE'
+SALUD_NUEVO_TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_SALUD_NUEVO')
 SALUD_NUEVO_TELEGRAM_CHAT_IDS = [-4815571002]  # Solo el grupo principal
 
 # ---------------------------
 # Configuración del Bot Salud Segundo (Insumos Específicos)
 # ---------------------------
-SALUD_SEGUNDO_TELEGRAM_TOKEN = '8198330250:AAGaJhK0YxHPrCwU8gAbRveBrLHSNmTzt6Q'
+SALUD_SEGUNDO_TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_SALUD_SEGUNDO')
 SALUD_SEGUNDO_TELEGRAM_CHAT_IDS = [-4815571002]  # Solo el grupo principal
 
 # Prefijos a buscar en codigo_item para el bot segundo de salud

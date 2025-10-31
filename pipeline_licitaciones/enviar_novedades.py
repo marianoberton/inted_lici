@@ -19,19 +19,19 @@ db = get_firestore_client()
 # ---------------------------
 # Configuración del Bot Original (CABA - Excluye código repartición 400-499)
 # ---------------------------
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_CABA')
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_CABA') or os.getenv('TELEGRAM_TOKEN') or os.getenv('TELEGRAM_TOKEN_NACION')  # DEBUG: fallbacks
 TELEGRAM_CHAT_IDS = [1880232778]  # DEBUG: Solo chat personal de Mariano
 
 # ---------------------------
 # Configuración del Bot Salud Nuevo (Procesos Salud - Código repartición 400-499)
 # ---------------------------
-SALUD_NUEVO_TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_SALUD_NUEVO')
+SALUD_NUEVO_TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_SALUD_NUEVO') or os.getenv('TELEGRAM_TOKEN') or os.getenv('TELEGRAM_TOKEN_NACION')  # DEBUG: fallbacks
 SALUD_NUEVO_TELEGRAM_CHAT_IDS = [1880232778]  # DEBUG: Solo chat personal de Mariano
 
 # ---------------------------
 # Configuración del Bot Salud Segundo (Insumos Específicos)
 # ---------------------------
-SALUD_SEGUNDO_TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_SALUD_SEGUNDO')
+SALUD_SEGUNDO_TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_SALUD_SEGUNDO') or os.getenv('TELEGRAM_TOKEN') or os.getenv('TELEGRAM_TOKEN_NACION')  # DEBUG: fallbacks
 SALUD_SEGUNDO_TELEGRAM_CHAT_IDS = [1880232778]  # DEBUG: Solo chat personal de Mariano
 
 # Prefijos a buscar en codigo_item para el bot segundo de salud

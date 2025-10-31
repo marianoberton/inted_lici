@@ -13,6 +13,7 @@ import json
 import firebase_admin
 from firebase_admin import credentials, firestore
 import logging
+import base64
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -45,7 +46,29 @@ class FirebaseConfig:
             credentials_json = os.getenv('FIREBASE_CREDENTIALS_JSON')
             if credentials_json:
                 logger.info("Usando credenciales desde FIREBASE_CREDENTIALS_JSON")
-                cred_dict = json.loads(credentials_json)
+                # Intentar cargar JSON y aplicar saneado si falla
+                try:
+                    cred_dict = json.loads(credentials_json)
+                except json.JSONDecodeError as je:
+                    logger.warning(f"JSON de FIREBASE_CREDENTIALS_JSON inválido, aplicando saneado: {je}")
+                    cleaned = credentials_json.strip()
+                    # Remover comillas envolventes si existen
+                    if (cleaned.startswith("'") and cleaned.endswith("'")) or (
+                        cleaned.startswith('"') and cleaned.endswith('"')
+                    ):
+                        cleaned = cleaned[1:-1]
+                    # Normalizar saltos de línea en claves (\r\n -> \n) y evitar saltos reales
+                    cleaned = cleaned.replace("\r\n", "\\n").replace("\n", "\\n")
+                    try:
+                        cred_dict = json.loads(cleaned)
+                    except Exception as je2:
+                        logger.warning(f"Reintento de carga tras saneado falló: {je2}. Probando base64...")
+                        try:
+                            decoded = base64.b64decode(credentials_json).decode('utf-8')
+                            cred_dict = json.loads(decoded)
+                        except Exception as je3:
+                            logger.error(f"No se pudo decodificar FIREBASE_CREDENTIALS_JSON ni tras saneado ni como base64: {je3}")
+                            raise
                 cred = credentials.Certificate(cred_dict)
                 self.app = firebase_admin.initialize_app(cred)
                 self.db = firestore.client()

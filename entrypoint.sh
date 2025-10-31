@@ -36,8 +36,8 @@ export TZ=America/Argentina/Buenos_Aires
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 EOF
 
-# Agregar todas las variables de entorno del contenedor al archivo
-env | grep -E '^(TELEGRAM_|FIREBASE_|GOOGLE_|GEMINI_)' >> /app/cron-env.sh
+# Agregar todas las variables de entorno del contenedor al archivo, exportándolas
+env | grep -E '^(TELEGRAM_|FIREBASE_|GOOGLE_|GEMINI_)' | sed 's/^/export /' >> /app/cron-env.sh
 
 # Alinear alias de variables de Telegram
 cat >> /app/cron-env.sh << 'EOF'
@@ -84,7 +84,7 @@ $CRON_HEARTBEAT_SCHEDULE root /bin/bash -lc 'date "+%Y-%m-%d %H:%M:%S - cron ali
 $CRON_SCHEDULE root /bin/bash -lc '/app/run_pipeline_cron.sh'
 
 # Test de variables cada minuto (opcional)
-$CRON_DEBUG_SCHEDULE root /bin/bash -lc 'source /app/cron-env.sh && L="${TELEGRAM_TOKEN_CABA:-}"; echo "$(date): Cron test - TELEGRAM_TOKEN_CABA len=${#L}" >> /app/data/logs/cron-debug.log'
+$CRON_DEBUG_SCHEDULE root /bin/bash -lc 'source /app/cron-env.sh && L="\${TELEGRAM_TOKEN_CABA:-}"; echo "\$(date): Cron test - TELEGRAM_TOKEN_CABA len=\${#L}" >> /app/data/logs/cron-debug.log'
 EOF
 chmod 0644 /etc/cron.d/pipeline
 

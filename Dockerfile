@@ -34,6 +34,7 @@ ENV GOOGLE_GEMINI_API_KEY=""
 
 # Crear directorios para datos persistentes
 RUN mkdir -p /app/data/logs /app/data/timestamps
+HEALTHCHECK --interval=5m --timeout=10s --start-period=1m --retries=3 CMD bash -lc 'test -f /app/data/logs/cron-heartbeat.log && [ $(($(date +%s) - $(stat -c %Y /app/data/logs/cron-heartbeat.log))) -lt 600 ] || exit 1'
 
 # Punto de entrada
 ENTRYPOINT ["./entrypoint.sh"]

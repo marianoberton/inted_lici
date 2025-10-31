@@ -14,6 +14,15 @@ find /app -type f \( -name "*.py" -o -name "*.sh" \) -exec dos2unix {} \;
 
 # Crear directorios de logs
 mkdir -p /app/data/logs
+# Test de escritura en el directorio de logs
+echo "Testing write permissions to /app/data/logs..."
+if touch /app/data/logs/test.log; then
+    echo "Write permissions are OK."
+    rm /app/data/logs/test.log
+else
+    echo "ERROR: Cannot write to /app/data/logs. Check volume permissions."
+fi
+
 
 # Configurar cron con timezone explícito - CADA 15 MINUTOS PARA TESTING
 echo "Configurando cron..."
@@ -45,25 +54,37 @@ cat > /app/run_pipeline_cron.sh << 'EOF'
 #!/bin/bash
 set -euo pipefail
 source /app/cron-env.sh
+export RUN_CONTEXT=cron
 cd /app
-/usr/bin/flock -n /app/data/pipeline.lock -c "/usr/bin/python3 pipeline_licitaciones/run_pipeline.py >> /app/data/logs/cron-pipeline.log 2>&1"
+if /usr/bin/flock -n /app/data/pipeline.lock -c "/usr/bin/python3 pipeline_licitaciones/run_pipeline.py >> /app/data/logs/cron-pipeline.log 2>&1"; then
+    EXIT_CODE=0
+else
+    EXIT_CODE=$?
+fi
+# Enviar reporte de estado siempre, incluso si falla el pipeline
+/usr/bin/python3 pipeline_licitaciones/status_report.py --context "${RUN_CONTEXT}" --exit-code "${EXIT_CODE}" || true
+exit "${EXIT_CODE}"
 EOF
 chmod +x /app/run_pipeline_cron.sh
 
 # Configurar cron usando /etc/cron.d (más estable en contenedores)
-cat > /etc/cron.d/pipeline << 'EOF'
+# Permitir configurar los schedules vía variables de entorno (Easypanel)
+CRON_SCHEDULE="${CRON_SCHEDULE:-*/15 * * * *}"
+CRON_HEARTBEAT_SCHEDULE="${CRON_HEARTBEAT_SCHEDULE:-*/5 * * * *}"
+CRON_DEBUG_SCHEDULE="${CRON_DEBUG_SCHEDULE:-* * * * *}"
+cat > /etc/cron.d/pipeline << EOF
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 TZ=America/Argentina/Buenos_Aires
 
 # Heartbeat cada 5 minutos para verificar que cron funciona
-*/5 * * * * root /bin/bash -lc 'date "+%Y-%m-%d %H:%M:%S - cron alive" >> /app/data/logs/cron-heartbeat.log'
+$CRON_HEARTBEAT_SCHEDULE root /bin/bash -lc 'date "+%Y-%m-%d %H:%M:%S - cron alive" >> /app/data/logs/cron-heartbeat.log'
 
 # Pipeline cada 15 minutos usando wrapper (carga env y usa flock)
-*/15 * * * * root /bin/bash -lc '/app/run_pipeline_cron.sh'
+$CRON_SCHEDULE root /bin/bash -lc '/app/run_pipeline_cron.sh'
 
 # Test de variables cada minuto (opcional)
-* * * * * root /bin/bash -lc 'source /app/cron-env.sh && echo "$(date): Cron test - TELEGRAM_TOKEN_CABA len=${#TELEGRAM_TOKEN_CABA:-0}" >> /app/data/logs/cron-debug.log'
+$CRON_DEBUG_SCHEDULE root /bin/bash -lc 'source /app/cron-env.sh && echo "$(date): Cron test - TELEGRAM_TOKEN_CABA len=${#TELEGRAM_TOKEN_CABA:-0}" >> /app/data/logs/cron-debug.log'
 EOF
 chmod 0644 /etc/cron.d/pipeline
 
@@ -153,10 +174,15 @@ echo "Ejecutando diagnóstico inicial de cron..."
 /app/debug_cron.sh
 chmod 666 /app/data/logs/cron-*.log
 
+# Enviar reporte inicial de estado a Telegram
+echo "Enviando reporte de estado inicial a Telegram..."
+export RUN_CONTEXT=startup
+python3 pipeline_licitaciones/status_report.py --context "${RUN_CONTEXT}" || true
+
 # Ejecutar pipeline al iniciar
-echo "Ejecutando el pipeline al iniciar..."
-cd /app
-python3 pipeline_licitaciones/run_pipeline.py
+# echo "Ejecutando el pipeline al iniciar..."
+# cd /app
+# python3 pipeline_licitaciones/run_pipeline.py
 
 # Iniciar cron en foreground y monitorear
 echo "Pipeline iniciado. Cron configurado para ejecutar CADA 15 MINUTOS (testing) - Argentina."

@@ -8,9 +8,9 @@ ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 echo "Timezone configurado: $(date)"
 echo "Timezone actual: $TZ"
 
-# Convertir archivos a formato Unix
-echo "Convirtiendo archivos a formato Unix..."
-find /app -type f \( -name "*.py" -o -name "*.sh" \) -exec dos2unix {} \;
+# Convertir archivos a formato Unix (COMENTADO PARA DEBUG)
+echo "DEBUG: Saltando conversión dos2unix..."
+# find /app -type f \( -name "*.py" -o -name "*.sh" \) -exec dos2unix {} \;
 
 # Crear directorios de logs
 mkdir -p /app/data/logs

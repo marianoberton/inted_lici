@@ -124,7 +124,6 @@ def send_telegram(mensaje: str):
             resp = requests.post(url, data={
                 'chat_id': cid,
                 'text': mensaje,
-                'parse_mode': 'Markdown',
                 'disable_web_page_preview': True
             }, timeout=20)
             print(f"Telegram status -> {cid}: {resp.status_code}")

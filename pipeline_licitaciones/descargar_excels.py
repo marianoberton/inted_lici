@@ -12,6 +12,9 @@ base_download_directory = "pipeline_licitaciones/excels"
 # Obtener la fecha actual en formato YYYY-MM-DD
 fecha_actual = datetime.now().strftime("%Y-%m-%d")
 
+# Flag para habilitar/deshabilitar la descarga de PBA (por defecto deshabilitada)
+ENABLE_PBA = os.getenv('ENABLE_PBA', 'false').lower() in ('1', 'true', 'yes')
+
 def convertir_excel_a_csv(ruta_excel, ruta_csv):
     """
     Convierte un archivo Excel a CSV.
@@ -129,28 +132,32 @@ with sync_playwright() as p:
                 print("Fallaron todos los intentos para CABA.")
                 all_success = False
 
-    # --- Descarga PBA ---
-    print("\n--- Iniciando descarga PBA ---")
-    success_pba = False
-    for attempt in range(1, max_retries + 1):
-        print(f"Intento {attempt} de {max_retries} para descargar reportePBA")
-        success_pba = run_download_task(p, browser_args,
-                                    "https://pbac.cgp.gba.gov.ar/",
-                                    "a[href='ListarAperturaProxima.aspx']:has-text('Ver Todos')",
-                                    "a#ctl00_CPH1_btnDescargarReporteExcel",
-                                    "reportePBA",
-                                    "pba")
-        if success_pba:
-            print("Descarga PBA exitosa")
-            break
-        else:
-            print(f"Descarga PBA fallida en el intento {attempt}")
-            if attempt < max_retries:
-                print(f"Esperando {retry_delay} segundos antes del próximo intento para PBA")
-                time.sleep(retry_delay)
+    # --- Descarga PBA --- (opcional, deshabilitada por defecto)
+    success_pba = None
+    if ENABLE_PBA:
+        print("\n--- Iniciando descarga PBA ---")
+        success_pba = False
+        for attempt in range(1, max_retries + 1):
+            print(f"Intento {attempt} de {max_retries} para descargar reportePBA")
+            success_pba = run_download_task(p, browser_args,
+                                        "https://pbac.cgp.gba.gov.ar/",
+                                        "a[href='ListarAperturaProxima.aspx']:has-text('Ver Todos')",
+                                        "a#ctl00_CPH1_btnDescargarReporteExcel",
+                                        "reportePBA",
+                                        "pba")
+            if success_pba:
+                print("Descarga PBA exitosa")
+                break
             else:
-                print("Fallaron todos los intentos para PBA.")
-                all_success = False
+                print(f"Descarga PBA fallida en el intento {attempt}")
+                if attempt < max_retries:
+                    print(f"Esperando {retry_delay} segundos antes del próximo intento para PBA")
+                    time.sleep(retry_delay)
+                else:
+                    print("Fallaron todos los intentos para PBA.")
+                    all_success = False
+    else:
+        print("\n⏭️ PBA deshabilitado (ENABLE_PBA=false) - saltando descarga")
 
     # --- Descarga Nación ---
     print("\n--- Iniciando descarga Nación ---")
@@ -183,10 +190,12 @@ else:
     print("\nDescarga de CABA exitosa - el pipeline puede continuar.")
     
     # Reportar el estado de las descargas opcionales
-    if success_pba:
+    if success_pba is True:
         print("✓ Descarga de PBA exitosa")
-    else:
+    elif success_pba is False:
         print("⚠ Descarga de PBA falló - continuando sin estos datos")
+    else:
+        print("⏭️ PBA deshabilitado - continuando sin estos datos")
     
     if success_nacion:
         print("✓ Descarga de Nación exitosa")

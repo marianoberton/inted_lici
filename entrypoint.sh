@@ -36,8 +36,11 @@ export TZ=America/Argentina/Buenos_Aires
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 EOF
 
-# Agregar todas las variables de entorno del contenedor al archivo, exportándolas
-env | grep -E '^(TELEGRAM_|FIREBASE_|GOOGLE_|GEMINI_)' | sed 's/^/export /' >> /app/cron-env.sh
+# Agregar todas las variables de entorno del contenedor al archivo, exportándolas con quoting seguro
+env | grep -E '^(TELEGRAM_|FIREBASE_|GOOGLE_|GEMINI_)' | while IFS='=' read -r KEY VAL; do
+    # Usar printf %q para escapar correctamente valores con espacios, comillas y saltos
+    printf "export %s=%q\n" "$KEY" "$VAL"
+done >> /app/cron-env.sh
 
 # Alinear alias de variables de Telegram
 cat >> /app/cron-env.sh << 'EOF'

@@ -24,6 +24,11 @@ else
 fi
 
 
+# Instalar navegadores de Playwright si faltan (Chromium)
+echo "Verificando/instalando navegadores de Playwright (Chromium)..."
+python3 -m playwright install chromium || true
+
+
 # Configurar cron con timezone explícito - CADA 10 MINUTOS PARA TESTING
 echo "Configurando cron..."
 

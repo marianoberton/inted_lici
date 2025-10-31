@@ -20,8 +20,13 @@ from firebase_config import get_firestore_client
 db = get_firestore_client()
 print("--- extraccion_caba.py: Después de inicializar Firebase ---")
 
-# Define the directory where CSV files are located (ajustado para Windows)
-csv_directory = 'pipeline_licitaciones/excels/caba/'
+# Define the directory where CSV files are located (compatible Docker/local)
+if os.path.exists("/app/pipeline_licitaciones"):
+    # Estamos en Docker
+    csv_directory = '/app/pipeline_licitaciones/excels/caba/'
+else:
+    # Estamos en local
+    csv_directory = 'pipeline_licitaciones/excels/caba/'
 
 # Function to get the most recent CSV file in the directory
 def obtener_csv_mas_reciente(directorio):

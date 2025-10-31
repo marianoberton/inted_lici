@@ -1,0 +1,99 @@
+# - - bash -lc "/app/diagnose_cron.sh"
+- /bin/sh: 1: -: not found
+# bash -lc "/app/diagnose_cron.sh" -
+/bin/sh: 2: -: not found
+# bash -lc "/app/diagnose_cron.sh"
+=== DIAGNÓSTICO CRON - 2025-10-28 21:55:27 America (+0000) ===
+1) PID 1 y proceso cron:
+    PID COMMAND         COMMAND
+      1 cron            cron -f
+1 cron -f
+95 /bin/bash /app/diagnose_cron.sh
+
+2) Zona horaria y TZ:
+TZ env: America/Argentina/Buenos_Aires
+PLAYWRIGHT_BROWSERS_PATH env: /ms-playwright
+Fecha contenedor: 2025-10-28 21:55:27 America (+0000)
+
+3) /etc/cron.d/pipeline:
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+TZ=America/Argentina/Buenos_Aires
+CRON_TZ=America/Argentina/Buenos_Aires
+
+# Heartbeat cada 5 minutos para verificar que cron funciona
+*/5 * * * * root /bin/bash -lc 'date "+%Y-%m-%d %H:%M:%S %Z - cron alive" >> /app/data/logs/cron-heartbeat.log'
+
+# Ejecutar pipeline una vez al iniciar el cron (al arrancar el contenedor)
+@reboot root /bin/bash -lc '/app/run_pipeline_cron.sh'
+
+# Pipeline cada 30 minutos, L-V entre 08:00 y 20:00 (incluye 20:00)
+*/30 8-19 * * 1-5 root /bin/bash -lc '/app/run_pipeline_cron.sh'
+0 20 * * 1-5 root /bin/bash -lc '/app/run_pipeline_cron.sh'
+
+# Test de variables cada minuto (opcional)
+* * * * * root /bin/bash -lc 'source /app/cron-env.sh && echo "$(date): Cron test - TELEGRAM_TOKEN_CABA len=${#TELEGRAM_TOKEN_CABA:-0}" >> /app/data/logs/cron-debug.log'
+
+4) Scripts y permisos:
+-rwxr-xr-x 1 root root 3129 Oct 28 21:48 /app/cron-env.sh
+-rwxr-xr-x 1 root root 205 Oct 28 21:48 /app/run_pipeline_cron.sh
+
+5) Python/Playwright:
+Python 3.10.12
+playwright ?
+
+6) Últimos logs:
+---- /app/data/logs/cron-heartbeat.log (tail 50) ----
+---- /app/data/logs/cron-debug.log (tail 50) ----
+---- /app/data/logs/cron-pipeline.log (tail 50) ----
+Click en selector 2 (descarga): a#ctl00_CPH1_btnDescargarReporteExcel
+Descarga iniciada: ReporteProcesos.xlsx
+Archivo guardado como: pipeline_licitaciones/excels/caba/reporteCaba_2025-10-28.xlsx
+Convertido: pipeline_licitaciones/excels/caba/reporteCaba_2025-10-28.xlsx -> pipeline_licitaciones/excels/caba/reporteCaba_2025-10-28.csv
+Archivo Excel original eliminado: pipeline_licitaciones/excels/caba/reporteCaba_2025-10-28.xlsx
+Traceback (most recent call last):
+  File "/app/pipeline_licitaciones/run_pipeline.py", line 133, in <module>
+    main()
+  File "/app/pipeline_licitaciones/run_pipeline.py", line 91, in main
+    if run_script(script):
+  File "/app/pipeline_licitaciones/run_pipeline.py", line 55, in run_script
+    for line in iter(process.stdout.readline, ''):
+KeyboardInterrupt
+🚀 Iniciando pipeline a las 18:40:31 del 28/10/2025
+--- Ejecutando descargar_excels.py ---
+
+--- Iniciando descarga CABA ---
+Intento 1 de 2 para descargar reporteCaba
+Traceback (most recent call last):
+  File "/app/pipeline_licitaciones/descargar_excels.py", line 114, in <module>
+    success_caba = run_download_task(p, browser_args,
+  File "/app/pipeline_licitaciones/descargar_excels.py", line 87, in run_download_task
+    browser = p.chromium.launch(headless=True, args=browser_args)
+  File "/usr/local/lib/python3.10/dist-packages/playwright/sync_api/_generated.py", line 14440, in launch
+    self._sync(
+  File "/usr/local/lib/python3.10/dist-packages/playwright/_impl/_sync_base.py", line 115, in _sync
+    return task.result()
+  File "/usr/local/lib/python3.10/dist-packages/playwright/_impl/_browser_type.py", line 95, in launch
+    Browser, from_channel(await self._channel.send("launch", params))
+  File "/usr/local/lib/python3.10/dist-packages/playwright/_impl/_connection.py", line 59, in send
+    return await self._connection.wrap_api_call(
+  File "/usr/local/lib/python3.10/dist-packages/playwright/_impl/_connection.py", line 520, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: BrowserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/chromium-1140/chrome-linux/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+Error ejecutando descargar_excels.py:
+None
+None
+--- descargar_excels.py falló ---
+El pipeline se detuvo debido a un error en descargar_excels.py.
+
+El pipeline finalizó con errores.
+⚠️ Configuración de Telegram no disponible, saltando envío de mensaje
+=== FIN DIAGNÓSTICO ===

@@ -4,9 +4,10 @@ import os
 import requests
 from datetime import datetime
 
-# Configuración de Telegram (usando las mismas variables de entorno que los otros scripts)
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_CABA')
-TELEGRAM_CHAT_IDS = [int(chat_id) for chat_id in os.getenv('TELEGRAM_CHAT_IDS_CABA', '').split(',') if chat_id.strip()]
+# Configuración de Telegram (usando fallbacks para debug)
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_CABA') or os.getenv('TELEGRAM_TOKEN') or os.getenv('TELEGRAM_TOKEN_NACION')
+TELEGRAM_CHAT_IDS_STR = os.getenv('TELEGRAM_CHAT_IDS_CABA') or os.getenv('TELEGRAM_CHAT_IDS') or '1880232778'  # DEBUG: fallback al chat personal
+TELEGRAM_CHAT_IDS = [int(chat_id) for chat_id in TELEGRAM_CHAT_IDS_STR.split(',') if chat_id.strip()]
 
 def enviar_mensaje_telegram(mensaje):
     """Envía un mensaje de confirmación a Telegram"""

@@ -104,16 +104,18 @@ def _build_report(context: str, exit_code: int | None):
 
 
 def send_telegram(mensaje: str):
-    token = os.getenv('TELEGRAM_TOKEN_CABA') or os.getenv('TELEGRAM_TOKEN')
-    chat_ids_env = os.getenv('TELEGRAM_CHAT_IDS_CABA') or os.getenv('TELEGRAM_CHAT_IDS') or ''
-    chat_ids = [int(x) for x in chat_ids_env.split(',') if x.strip().isdigit()]
-
-    # Fallback al chat solicitado por Mariano
-    if not chat_ids:
-        chat_ids = [1880232778]
+    # DEBUG: Usar cualquier token disponible, priorizando TELEGRAM_TOKEN_CABA
+    token = os.getenv('TELEGRAM_TOKEN_CABA') or os.getenv('TELEGRAM_TOKEN') or os.getenv('TELEGRAM_TOKEN_NACION')
+    
+    # DEBUG: Siempre usar chat personal de Mariano
+    chat_ids = [1880232778]
 
     if not token:
         print("⚠️ Sin TELEGRAM_TOKEN disponible, no se enviará reporte")
+        print("🔍 Tokens disponibles:")
+        print(f"  TELEGRAM_TOKEN_CABA: {'✓' if os.getenv('TELEGRAM_TOKEN_CABA') else '✗'}")
+        print(f"  TELEGRAM_TOKEN: {'✓' if os.getenv('TELEGRAM_TOKEN') else '✗'}")
+        print(f"  TELEGRAM_TOKEN_NACION: {'✓' if os.getenv('TELEGRAM_TOKEN_NACION') else '✗'}")
         return
 
     url = f'https://api.telegram.org/bot{token}/sendMessage'
@@ -126,6 +128,8 @@ def send_telegram(mensaje: str):
                 'disable_web_page_preview': True
             }, timeout=20)
             print(f"Telegram status -> {cid}: {resp.status_code}")
+            if resp.status_code != 200:
+                print(f"Telegram error response: {resp.text}")
         except Exception as e:
             print(f"Error enviando a {cid}: {e}")
 

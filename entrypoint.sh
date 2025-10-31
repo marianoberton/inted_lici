@@ -24,7 +24,7 @@ else
 fi
 
 
-# Configurar cron con timezone explícito - CADA 15 MINUTOS PARA TESTING
+# Configurar cron con timezone explícito - CADA 10 MINUTOS PARA TESTING
 echo "Configurando cron..."
 
 # Crear archivo de variables de entorno para cron
@@ -72,7 +72,7 @@ chmod +x /app/run_pipeline_cron.sh
 
 # Configurar cron usando /etc/cron.d (más estable en contenedores)
 # Permitir configurar los schedules vía variables de entorno (Easypanel)
-CRON_SCHEDULE="${CRON_SCHEDULE:-*/15 * * * *}"
+CRON_SCHEDULE="${CRON_SCHEDULE:-*/10 * * * *}"
 CRON_HEARTBEAT_SCHEDULE="${CRON_HEARTBEAT_SCHEDULE:-*/5 * * * *}"
 CRON_DEBUG_SCHEDULE="${CRON_DEBUG_SCHEDULE:-* * * * *}"
 cat > /etc/cron.d/pipeline << EOF
@@ -83,7 +83,7 @@ TZ=America/Argentina/Buenos_Aires
 # Heartbeat cada 5 minutos para verificar que cron funciona
 $CRON_HEARTBEAT_SCHEDULE root /bin/bash -lc 'date "+%Y-%m-%d %H:%M:%S - cron alive" >> /app/data/logs/cron-heartbeat.log'
 
-# Pipeline cada 15 minutos usando wrapper (carga env y usa flock)
+# Pipeline cada 10 minutos usando wrapper (carga env y usa flock)
 $CRON_SCHEDULE root /bin/bash -lc '/app/run_pipeline_cron.sh'
 
 # Test de variables cada minuto (opcional)
@@ -188,7 +188,7 @@ python3 pipeline_licitaciones/status_report.py --context "${RUN_CONTEXT}" || tru
 # python3 pipeline_licitaciones/run_pipeline.py
 
 # Iniciar cron en foreground y monitorear
-echo "Pipeline iniciado. Cron configurado para ejecutar CADA 15 MINUTOS (testing) - Argentina."
+echo "Pipeline iniciado. Cron configurado para ejecutar CADA 10 MINUTOS (testing) - Argentina."
 echo "Iniciando cron daemon..."
 
 # Ejecutar el pipeline una vez al iniciar, protegido por flock

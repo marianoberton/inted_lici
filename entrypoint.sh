@@ -84,7 +84,7 @@ $CRON_HEARTBEAT_SCHEDULE root /bin/bash -lc 'date "+%Y-%m-%d %H:%M:%S - cron ali
 $CRON_SCHEDULE root /bin/bash -lc '/app/run_pipeline_cron.sh'
 
 # Test de variables cada minuto (opcional)
-$CRON_DEBUG_SCHEDULE root /bin/bash -lc 'source /app/cron-env.sh && echo "$(date): Cron test - TELEGRAM_TOKEN_CABA len=${#TELEGRAM_TOKEN_CABA:-0}" >> /app/data/logs/cron-debug.log'
+$CRON_DEBUG_SCHEDULE root /bin/bash -lc 'source /app/cron-env.sh && L="${TELEGRAM_TOKEN_CABA:-}"; echo "$(date): Cron test - TELEGRAM_TOKEN_CABA len=${#L}" >> /app/data/logs/cron-debug.log'
 EOF
 chmod 0644 /etc/cron.d/pipeline
 

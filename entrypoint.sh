@@ -78,7 +78,8 @@ chmod +x /app/run_pipeline_cron.sh
 
 # Configurar cron usando /etc/cron.d (más estable en contenedores)
 # Permitir configurar los schedules vía variables de entorno (Easypanel)
-CRON_SCHEDULE="${CRON_SCHEDULE:-*/10 * * * *}"
+# Producción: Lunes a Viernes, de 08:00 a 20:00, cada 1 hora
+CRON_SCHEDULE="${CRON_SCHEDULE:-0 8-20 * * 1-5}"
 CRON_HEARTBEAT_SCHEDULE="${CRON_HEARTBEAT_SCHEDULE:-*/5 * * * *}"
 CRON_DEBUG_SCHEDULE="${CRON_DEBUG_SCHEDULE:-* * * * *}"
 cat > /etc/cron.d/pipeline << EOF
@@ -89,7 +90,7 @@ TZ=America/Argentina/Buenos_Aires
 # Heartbeat cada 5 minutos para verificar que cron funciona
 $CRON_HEARTBEAT_SCHEDULE root /bin/bash -lc 'date "+%Y-%m-%d %H:%M:%S - cron alive" >> /app/data/logs/cron-heartbeat.log'
 
-# Pipeline cada 10 minutos usando wrapper (carga env y usa flock)
+# Pipeline L-V 08–20 cada 1 hora usando wrapper (carga env y usa flock)
 $CRON_SCHEDULE root /bin/bash -lc '/app/run_pipeline_cron.sh'
 
 # Test de variables cada minuto (opcional)

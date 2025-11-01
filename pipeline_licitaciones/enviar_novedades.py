@@ -19,20 +19,24 @@ db = get_firestore_client()
 # ---------------------------
 # Configuración del Bot Original (CABA - Excluye código repartición 400-499)
 # ---------------------------
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_CABA') or os.getenv('TELEGRAM_TOKEN') or os.getenv('TELEGRAM_TOKEN_NACION')  # DEBUG: fallbacks
-TELEGRAM_CHAT_IDS = [1880232778]  # DEBUG: Solo chat personal de Mariano
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_CABA') or os.getenv('TELEGRAM_TOKEN') or os.getenv('TELEGRAM_TOKEN_NACION')
+# Producción: enviar al grupo por defecto (-4815571002). Permitir override por env.
+_caba_chat_env = os.getenv('TELEGRAM_CHAT_IDS_CABA', '-4815571002')
+TELEGRAM_CHAT_IDS = [int(x.strip()) for x in _caba_chat_env.split(',') if x.strip()]
 
 # ---------------------------
 # Configuración del Bot Salud Nuevo (Procesos Salud - Código repartición 400-499)
 # ---------------------------
-SALUD_NUEVO_TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_SALUD_NUEVO') or os.getenv('TELEGRAM_TOKEN') or os.getenv('TELEGRAM_TOKEN_NACION')  # DEBUG: fallbacks
-SALUD_NUEVO_TELEGRAM_CHAT_IDS = [1880232778]  # DEBUG: Solo chat personal de Mariano
+SALUD_NUEVO_TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_SALUD_NUEVO') or os.getenv('TELEGRAM_TOKEN') or os.getenv('TELEGRAM_TOKEN_NACION')
+_salud_nuevo_chat_env = os.getenv('TELEGRAM_CHAT_IDS_SALUD_NUEVO', '-4815571002')
+SALUD_NUEVO_TELEGRAM_CHAT_IDS = [int(x.strip()) for x in _salud_nuevo_chat_env.split(',') if x.strip()]
 
 # ---------------------------
 # Configuración del Bot Salud Segundo (Insumos Específicos)
 # ---------------------------
-SALUD_SEGUNDO_TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_SALUD_SEGUNDO') or os.getenv('TELEGRAM_TOKEN') or os.getenv('TELEGRAM_TOKEN_NACION')  # DEBUG: fallbacks
-SALUD_SEGUNDO_TELEGRAM_CHAT_IDS = [1880232778]  # DEBUG: Solo chat personal de Mariano
+SALUD_SEGUNDO_TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN_SALUD_SEGUNDO') or os.getenv('TELEGRAM_TOKEN') or os.getenv('TELEGRAM_TOKEN_NACION')
+_salud_segundo_chat_env = os.getenv('TELEGRAM_CHAT_IDS_SALUD_SEGUNDO', '-4815571002')
+SALUD_SEGUNDO_TELEGRAM_CHAT_IDS = [int(x.strip()) for x in _salud_segundo_chat_env.split(',') if x.strip()]
 
 # Prefijos a buscar en codigo_item para el bot segundo de salud
 SALUD_TARGET_PREFIXES = [

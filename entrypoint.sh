@@ -39,10 +39,11 @@ cat > /app/cron-env.sh << 'EOF'
 # Variables de entorno para cron
 export TZ=America/Argentina/Buenos_Aires
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 EOF
 
 # Agregar todas las variables de entorno del contenedor al archivo, exportándolas con quoting seguro
-env | grep -E '^(TELEGRAM_|FIREBASE_|GOOGLE_|GEMINI_)' | while IFS='=' read -r KEY VAL; do
+env | grep -E '^(TELEGRAM_|FIREBASE_|GOOGLE_|GEMINI_|PLAYWRIGHT_)' | while IFS='=' read -r KEY VAL; do
     # Usar printf %q para escapar correctamente valores con espacios, comillas y saltos
     printf "export %s=%q\n" "$KEY" "$VAL"
 done >> /app/cron-env.sh
